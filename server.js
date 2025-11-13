@@ -1,28 +1,31 @@
-console.log("KAKAO_API_KEY:", process.env.KAKAO_API_KEY);
-
 import express from "express";
 import axios from "axios";
 import cors from "cors";
 
 const app = express();
-app.use(cors()); // 모든 도메인 허용
+app.use(cors());
 app.use(express.json());
 
 app.post("/send-kakao", async (req, res) => {
   const { phoneNumber } = req.body;
-  const apiKey = process.env.KAKAO_API_KEY; // Render 환경변수
-  if (!apiKey) return res.status(500).json({ success: false, error: "KAKAO_API_KEY 미등록" });
+  const accessToken = process.env.KAKAO_BIZ_ACCESS_TOKEN || "4f0e3017870c0e3032d2bcc4e6ba0278"; // 새 키
+  const templateCode = process.env.KAKAO_TEMPLATE_CODE || "CONSULT_ALERT";
+
+  if (!accessToken) return res.status(500).json({ success: false, error: "Access Token 미등록" });
 
   try {
     const response = await axios.post(
-      "https://kapi.kakao.com/v2/api/talk/memo/default/send",
+      "https://api.bizmsg.kakao.com/v1/messages",
       {
-        object_type: "text",
-        text: `상담 요청 전화번호: ${phoneNumber}`,
-        link: { web_url: "https://moontwonet.imweb.me" }
+        template_code: templateCode,
+        recipient_number: phoneNumber,
+        message: `상담 요청 전화번호: ${phoneNumber}`
       },
-      { headers: { Authorization: `KakaoAK ${apiKey}` } }
+      {
+        headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }
+      }
     );
+
     res.json({ success: true, response: response.data });
   } catch (err) {
     console.error(err.response?.data || err.message);
