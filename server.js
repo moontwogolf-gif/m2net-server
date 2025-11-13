@@ -1,22 +1,22 @@
 import express from "express";
-import cors from "cors";
 import axios from "axios";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 
 app.post("/send-kakao", async (req, res) => {
   const { phoneNumber } = req.body;
-  const apiKey = process.env.KAKAO_API_KEY;
-  const templateCode = process.env.TEMPLATE_CODE || "CONSULT_ALERT";
+  const apiKey = process.env.KAKAO_API_KEY; // Render 환경변수에서 가져오기
 
   try {
     const response = await axios.post(
       "https://kapi.kakao.com/v2/api/talk/memo/default/send",
       {
         object_type: "text",
-        text: `상담 요청 전화번호: ${phoneNumber}`,
+        text: `📞 M2Net 상담 요청 전화번호: ${phoneNumber}`,
         link: { web_url: "https://moontwonet.imweb.me" }
       },
       {
@@ -26,7 +26,7 @@ app.post("/send-kakao", async (req, res) => {
 
     res.json({ success: true, response: response.data });
   } catch (err) {
-    console.error(err.response?.data || err.message);
+    console.error("카카오톡 전송 실패:", err.response?.data || err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });
