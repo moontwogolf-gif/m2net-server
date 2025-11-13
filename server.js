@@ -1,3 +1,5 @@
+console.log("KAKAO_API_KEY:", process.env.KAKAO_API_KEY);
+
 import express from "express";
 import axios from "axios";
 import cors from "cors";
