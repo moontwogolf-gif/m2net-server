@@ -15,26 +15,22 @@ async function refreshAccessToken() {
       params: {
         grant_type: "refresh_token",
         client_id: process.env.KAKAO_REST_API_KEY,
-        refresh_token: process.env.KAKAO_REFRESH_TOKEN,
+        refresh_token: process.env.KAKAO_REFRESH_TOKEN
       },
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }
     });
 
     accessToken = res.data.access_token;
-    console.log("🔄 Access Token 갱신 성공:", accessToken ? "OK" : "없음");
+    console.log("🔄 Access Token 갱신 성공:", accessToken ? "OK" : "토큰 없음");
   } catch (err) {
     console.error("❌ Access Token 갱신 실패:", err.response?.data || err.message);
   }
-});
+}
 
-// ✅ OAuth Redirect 테스트 라우터 (★ 반드시 위쪽에!)
-app.get("/oauth", (req, res) => {
-  res.send("OAuth Redirect URI OK");
-});
-
-// ✅ 전화번호 전송 API
+// ✅ 상담 번호 카카오톡 전송 API
 app.post("/send-kakao", async (req, res) => {
   const { phoneNumber } = req.body;
+
   if (!accessToken) {
     return res.status(500).json({ success: false, error: "Access token 없음" });
   }
@@ -45,28 +41,35 @@ app.post("/send-kakao", async (req, res) => {
       {
         object_type: "text",
         text: `📞 상담 요청 전화번호: ${phoneNumber}`,
-        link: { web_url: "https://moontwonet.imweb.me" },
+        link: { web_url: "https://moontwonet.imweb.me" }
       },
       {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: { Authorization: `Bearer ${accessToken}` }
       }
     );
 
     res.json({ success: true, response: response.data });
   } catch (err) {
-    console.error("❌ 카카오 전송 실패:", err.response?.data || err.message);
+    console.error("❌ 카카오톡 전송 실패:", err.response?.data || err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// ✅ 서버 시작
-async function startServer() {
+// OAuth Redirect 테스트용
+app.get("/oauth", (req, res) => {
+  res.send("OAuth Redirect URI OK");
+});
+
+// 서버 시작
+async function start() {
   console.log("🚀 Access Token 요청 중...");
-  await refreshAccessToken();
-  setInterval(refreshAccessToken, 50 * 60 * 1000);
+  await refreshAccessToken(); // 최초 갱신
+  setInterval(refreshAccessToken, 50 * 60 * 1000); // 50분마다 갱신
 
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => console.log(`✅ M2Net 서버 실행 중... 포트: ${PORT}`));
+  app.listen(PORT, () =>
+    console.log(`✅ M2Net 서버 실행 중... 포트: ${PORT}`)
+  );
 }
 
-startServer();
+start();
