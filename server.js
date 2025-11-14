@@ -65,3 +65,7 @@ async function startServer() {
 }
 
 startServer();
+// OAuth Redirect 테스트용
+app.get("/oauth", (req, res) => {
+  res.send("OAuth Redirect URI OK");
+});
