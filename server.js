@@ -25,7 +25,12 @@ async function refreshAccessToken() {
   } catch (err) {
     console.error("❌ Access Token 갱신 실패:", err.response?.data || err.message);
   }
-}
+});
+
+// ✅ OAuth Redirect 테스트 라우터 (★ 반드시 위쪽에!)
+app.get("/oauth", (req, res) => {
+  res.send("OAuth Redirect URI OK");
+});
 
 // ✅ 전화번호 전송 API
 app.post("/send-kakao", async (req, res) => {
@@ -57,15 +62,11 @@ app.post("/send-kakao", async (req, res) => {
 // ✅ 서버 시작
 async function startServer() {
   console.log("🚀 Access Token 요청 중...");
-  await refreshAccessToken(); // 최초 토큰 갱신
-  setInterval(refreshAccessToken, 50 * 60 * 1000); // 50분마다 갱신
+  await refreshAccessToken();
+  setInterval(refreshAccessToken, 50 * 60 * 1000);
 
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => console.log(`✅ M2Net 서버 실행 중... 포트: ${PORT}`));
 }
 
 startServer();
-// OAuth Redirect 테스트용
-app.get("/oauth", (req, res) => {
-  res.send("OAuth Redirect URI OK");
-});
